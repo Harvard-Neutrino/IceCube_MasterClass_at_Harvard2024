@@ -34,8 +34,8 @@ plot objects for the strings and the boundaries of the detector.
 """
 def plot_I3det():
 
-    I3_dom_z = np.loadtxt("../resources/detector_info/I3_dom_zpos.txt")
-    I3_str_xy = np.loadtxt("./resources/detector_info/I3_string_xypos.txt")
+    I3_dom_z = np.loadtxt("resources/detector_info/I3_dom_zpos.txt")
+    I3_str_xy = np.loadtxt("resources/detector_info/I3_string_xypos.txt")
     N_strings = I3_str_xy.shape[0]
 
     I3_strings = [ go.Scatter3d( 
