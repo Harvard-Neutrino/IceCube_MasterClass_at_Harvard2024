@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-NAME = "I3MasterClass2024"
+NAME = "I3MasterClass_Harvard2024"
 URL = "https://github.com/kcarloni/IceCube_MasterClass_at_Harvard2024"
 
 setup(
