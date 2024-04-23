@@ -97,7 +97,7 @@ def plot_first_hits(evt):
 
     return hits
 
-def plot_direction( dir_vec, pivot_pt ):
+def plot_direction( dir_vec, pivot_pt, color="black" ):
 
     pt_0 = pivot_pt - 500 * dir_vec
     pt_1 = pivot_pt + 500 * dir_vec
@@ -108,7 +108,8 @@ def plot_direction( dir_vec, pivot_pt ):
             y = [ pt_0[1], pt_1[1] ],
             z = [ pt_0[2], pt_1[2] ],
             mode ='lines',
-            line = dict( color='black', width=6 ),
+            line = dict( color=color, width=6 ),
+            showlegend=False,
             # marker = dict( color='black', size=4 )
         )
 
@@ -123,7 +124,7 @@ def plot_direction( dir_vec, pivot_pt ):
         showscale=False,
         sizemode="absolute",
         sizeref=100, 
-        colorscale=[[0, "black"], [1, "black"]]
+        colorscale=[[0, color], [1, color]]
     )
 
     return [ plot_dir_line, plot_dir_arrow ]
