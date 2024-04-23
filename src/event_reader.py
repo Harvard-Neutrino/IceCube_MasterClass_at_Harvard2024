@@ -2,7 +2,7 @@
 from pandas import read_parquet
 from pandas import DataFrame
 
-# just a wrapper around a dataframe. 
+# just a wrapper with a __repr__ attribute...
 class Event():
 
     def __init__( self, photon_hits, true_q  ):
@@ -10,6 +10,7 @@ class Event():
         self.true_muon_zenith = true_q["final_state_zenith"][0]
         self.true_muon_azimuth = true_q["final_state_azimuth"][0]
 
+        # self.hits = photon_hits
         self.hits = DataFrame( photon_hits )[[
             "t", "string_id", "sensor_id",
             "sensor_pos_x", "sensor_pos_y", "sensor_pos_z",
@@ -20,6 +21,10 @@ class Event():
     def __repr__(self): 
         print( type(self) )
         return repr( self.hits )
+        # return repr( DataFrame( self.hits )[[
+        #     "t", "string_id", "sensor_id",
+        #     "sensor_pos_x", "sensor_pos_y", "sensor_pos_z",
+        # ]] )
 
 # a wrapper around the output of read_parquet,
 # with specialized get

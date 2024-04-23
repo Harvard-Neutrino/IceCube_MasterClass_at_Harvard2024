@@ -63,7 +63,10 @@ def plot_I3det():
 
     return I3_strings + I3_borders
 
-
+"""
+visualize an event by making a scatter plot of the unique DOMs hit.
+Based on code prepared by Felix Yu (felixyu7) and Jeffrey Lazar (jlazar17) for the 2023 MasterClass.
+"""
 def plot_first_hits(evt):
 
     hits = evt.hits[["t", "sensor_pos_x", "sensor_pos_y", "sensor_pos_z"]].to_numpy()
@@ -93,3 +96,34 @@ def plot_first_hits(evt):
     )
 
     return hits
+
+def plot_direction( dir_vec, pivot_pt ):
+
+    pt_0 = pivot_pt - 500 * dir_vec
+    pt_1 = pivot_pt + 500 * dir_vec
+    arrow_vec = 20 * dir_vec
+
+    plot_dir_line = go.Scatter3d(
+            x = [ pt_0[0], pt_1[0] ],
+            y = [ pt_0[1], pt_1[1] ],
+            z = [ pt_0[2], pt_1[2] ],
+            mode ='lines',
+            line = dict( color='black', width=6 ),
+            # marker = dict( color='black', size=4 )
+        )
+
+    plot_dir_arrow = go.Cone(
+        x = [ pt_1[0] ],
+        y = [ pt_1[1] ],
+        z = [ pt_1[2] ],
+        u = [ arrow_vec[0], ],
+        v = [ arrow_vec[1], ],
+        w = [ arrow_vec[2], ],
+        anchor="center",
+        showscale=False,
+        sizemode="absolute",
+        sizeref=100, 
+        colorscale=[[0, "black"], [1, "black"]]
+    )
+
+    return [ plot_dir_line, plot_dir_arrow ]
