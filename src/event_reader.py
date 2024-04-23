@@ -8,7 +8,7 @@ class Event():
     def __init__( self, photon_hits, true_q  ):
 
         self.true_muon_zenith = true_q["final_state_zenith"][0]
-        self.true_muon_azimuth = true_q["final_state_zenith"][0]
+        self.true_muon_azimuth = true_q["final_state_azimuth"][0]
 
         self.hits = DataFrame( photon_hits )[[
             "t", "string_id", "sensor_id",
