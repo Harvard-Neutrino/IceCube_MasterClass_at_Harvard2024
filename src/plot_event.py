@@ -32,10 +32,10 @@ def get_3d_layout():
 """
 plot objects for the strings and the boundaries of the detector.
 """
-def plot_I3det():
+def plot_I3det(dir="../../"):
 
-    I3_dom_z = np.loadtxt("IceCube_MasterClass_at_Harvard2024/resources/detector_info/I3_dom_zpos.txt")
-    I3_str_xy = np.loadtxt("IceCube_MasterClass_at_Harvard2024/resources/detector_info/I3_string_xypos.txt")
+    I3_dom_z = np.loadtxt("%s/IceCube_MasterClass_at_Harvard2024/resources/detector_info/I3_dom_zpos.txt"%dir)
+    I3_str_xy = np.loadtxt("%s/IceCube_MasterClass_at_Harvard2024/resources/detector_info/I3_string_xypos.txt"%dir)
     N_strings = I3_str_xy.shape[0]
 
     I3_strings = [ go.Scatter3d( 
