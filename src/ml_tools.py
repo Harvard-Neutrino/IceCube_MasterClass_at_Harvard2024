@@ -16,12 +16,15 @@ from torch.utils.data import Dataset
 
 class MLEventSelection():
 
-    def __init__( self, path , N=None):
+    def __init__( self, path , N=None, min_hits = 10):
 
-        if N is None:
-            out = read_parquet( path )
-        else:
-            out = read_parquet( path )[:N]
+        out = read_parquet( path )
+
+        hits_flag = [len(out["photons"][out["photons"].index[i]]["sensor_pos_x"]) > min_hits for i in range(len(out["photons"]))]
+        out = out[hits_flag]
+
+        if N is not None:
+            out = out[:N]
 
 
         self.N_events = len( out["photons"] )
@@ -41,15 +44,14 @@ class MLEventSelection():
 
 class Net(nn.Module):
 
-    def __init__(self):
+    def __init__(self, width=1000):
         super(Net, self).__init__()
         # define two convolutional layers
         self.conv1 = nn.Conv2d(2, 6, 5)
-        self.conv2 = nn.Conv2d(6, 12, 5)
+        self.conv2 = nn.Conv2d(6, 6, 5)
         # define three linear layers
-        self.fc1 = nn.Linear(3888, 1000)  # 3888 from image dimension
-        self.fc2 = nn.Linear(1000, 84)
-        self.fc3 = nn.Linear(84, 1)
+        self.fc1 = nn.Linear(1944, width)  # 3888 from image dimension
+        self.fc2 = nn.Linear(width, 1)
 
     def forward(self, input):
         # Convolution layer C1: 2 input image channels, 6 output channels,
@@ -73,10 +75,10 @@ class Net(nn.Module):
         f5 = F.relu(self.fc1(s4))
         # Fully connected layer F6: (N, 120) Tensor input,
         # and outputs a (N, 84) Tensor, it uses RELU activation function
-        f6 = F.relu(self.fc2(f5))
+        # f6 = F.relu(self.fc2(f5))
         # Gaussian layer OUTPUT: (N, 84) Tensor input, and
         # outputs a (N, 10) Tensor
-        output = (F.tanh(self.fc3(f6)) + 1)/2.
+        output = (F.tanh(self.fc2(f5)) + 1)/2.
         #output = torch.where(output<0,0,output)
         #output = torch.where(output>1,1,output)
         return output
@@ -100,6 +102,7 @@ class CustomImageDataset(Dataset):
 class MLHelper():
 
     def generate_dataset(self,mu_events,e_events,N,m=87):
+        # function to generate the input images to the CNN
         images = np.empty((2*N,2,m,m),dtype=np.float32)
         labels = np.empty((2*N,4),dtype=np.float32)
         self.hits = concat([mu_events.event_hit_info,
@@ -137,26 +140,34 @@ class MLHelper():
         self.mc_truth = self.mc_truth.iloc[np.array(randperm)].reset_index(drop=True)
         return torch.from_numpy(images[randperm]),torch.from_numpy(labels[randperm])
 
-    def __init__(self, mu_path, e_path, N_train=5000, N=3000):
+    def __init__(self, mu_path, e_path, N=2000):
         
         # make our event files
-        mu_events = MLEventSelection(mu_path,N=N)
-        e_events = MLEventSelection(e_path,N=N)
+        self.mu_events = MLEventSelection(mu_path,N=N)
+        self.e_events = MLEventSelection(e_path,N=N)
+        self.N = N
 
+        
+    def MakeTrainingDataset(self, N_train):
+        
         # make sure we have enough training events
-        assert(N_train < 2*N)
+        assert(N_train < 2*self.N)
 
-        # load the train and test datasets
-        self.images, self.labels = self.generate_dataset(mu_events,e_events,N=N)
-        N_test = 2*N - N_train
+        # load the train and test images and labels
+        self.images, self.labels = self.generate_dataset(self.mu_events,self.e_events,N=self.N)
+        N_test = 2*self.N - N_train
+
+        # turn these into pytorch dataloaders
         self.train_dataloader = DataLoader(CustomImageDataset(self.images[:N_train],self.labels[:N_train]), batch_size=10, shuffle=True)
         self.test_dataloader = DataLoader(CustomImageDataset(self.images[-N_test:],self.labels[-N_test:]), batch_size=64, shuffle=True)
 
+        
+    def MakeNetwork(self,width=1000,lr=0.001,momentum=0.9,gamma=0.9):
         # define the CNN
-        self.net = Net()
+        self.net = Net(width=width)
         print("Created neural network with %d trainable parameters"%sum(p.numel() for p in self.net.parameters() if p.requires_grad))
-        self.optimizer = optim.SGD(self.net.parameters(), lr=0.001, momentum=0.9)
-        self.scheduler = torch.optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.9)
+        self.optimizer = optim.SGD(self.net.parameters(), lr=lr, momentum=momentum)
+        self.scheduler = torch.optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=gamma)
         self.criterion = nn.functional.binary_cross_entropy
 
     def train(self, num_epochs=10):
@@ -175,9 +186,14 @@ class MLHelper():
             self.scheduler.step()
         return loss_dict
     
-    def plot_event(self, idx):
+    def plot_event(self, idx, reveal_network_predition=True, reveal_true_label=True):
 
         event = Event(self.hits[idx],self.mc_truth[idx])
+
+        self.net.eval()
+        input = torch.from_numpy(np.expand_dims(self.images[idx],0))
+        output = self.net(input).detach().numpy().item()
+        label = self.labels[idx].detach().numpy()[0]
         
         layout = get_3d_layout()
         plot_det = plot_I3det()
@@ -187,8 +203,18 @@ class MLHelper():
         plot_evt = plot_first_hits(event)
         fig.add_trace(plot_evt)
 
-        fig.show()
+        if reveal_network_predition:
+            fig.add_annotation(x=0.4, y=0.9,
+                text="Network Electron Score: %2.2f"%output,
+                showarrow=False,
+                #yshift=10
+                )
+        if reveal_true_label:
+            fig.add_annotation(x=0.6, y=0.9,
+                text="True Label: %s"%("Muon" if label==0 else "Electron"),
+                showarrow=False,
+                #yshift=10
+                )
 
-    def get_event_info(self, idx):
-        print(self.net(np.expand_dims(self.images[idx],0)),self.labels[idx])
+        fig.show()
 
