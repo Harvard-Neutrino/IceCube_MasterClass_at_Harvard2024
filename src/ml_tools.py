@@ -148,18 +148,20 @@ class MLHelper():
         self.N = N
 
         
-    def MakeTrainingDataset(self, N_train):
+    def MakeTrainingDataset(self, N_train, batch_size=32):
         
+        self.N_train = N_train
+        self.N_test = 2*self.N - N_train
+
         # make sure we have enough training events
         assert(N_train < 2*self.N)
 
         # load the train and test images and labels
         self.images, self.labels = self.generate_dataset(self.mu_events,self.e_events,N=self.N)
-        N_test = 2*self.N - N_train
 
         # turn these into pytorch dataloaders
-        self.train_dataloader = DataLoader(CustomImageDataset(self.images[:N_train],self.labels[:N_train]), batch_size=10, shuffle=True)
-        self.test_dataloader = DataLoader(CustomImageDataset(self.images[-N_test:],self.labels[-N_test:]), batch_size=64, shuffle=True)
+        self.train_dataloader = DataLoader(CustomImageDataset(self.images[:N_train],self.labels[:N_train]), batch_size=batch_size, shuffle=True)
+        self.test_dataloader = DataLoader(CustomImageDataset(self.images[-self.N_test:],self.labels[-self.N_test:]), batch_size=batch_size, shuffle=True)
 
         
     def MakeNetwork(self,width=1000,lr=0.001,momentum=0.9,gamma=0.9):
@@ -173,7 +175,7 @@ class MLHelper():
     def train(self, num_epochs=10):
         loss_dict = {}
         for epoch in range(num_epochs):
-            print("Beginning epoch %d/%d\n"%(epoch+1,num_epochs))
+            print("Beginning epoch %d/%d"%(epoch+1,num_epochs))
             loss_dict[epoch] = []
             for input,target in self.train_dataloader:
                 self.optimizer.zero_grad()   # zero the gradient buffers
@@ -183,10 +185,18 @@ class MLHelper():
                 loss_dict[epoch].append(loss.detach().numpy())
                 loss.backward()
                 self.optimizer.step()    # Does the update
+            print ("\033[A                            \033[A")
             self.scheduler.step()
         return loss_dict
     
-    def plot_event(self, idx, reveal_network_predition=True, reveal_true_label=True):
+    def plot_event(self, idx, reveal_network_predition=True, reveal_true_label=True, testset=True):
+
+        if testset:
+            idx += self.N_train
+        
+        if idx > len(self.hits):
+            print("Index %d is out of bounds! Try again"%idx)
+            return
 
         event = Event(self.hits[idx],self.mc_truth[idx])
 
@@ -204,16 +214,14 @@ class MLHelper():
         fig.add_trace(plot_evt)
 
         if reveal_network_predition:
-            fig.add_annotation(x=0.4, y=0.9,
+            fig.add_annotation(x=0.5, y=1.0,
                 text="Network Electron Score: %2.2f"%output,
                 showarrow=False,
-                #yshift=10
                 )
         if reveal_true_label:
-            fig.add_annotation(x=0.6, y=0.9,
+            fig.add_annotation(x=0.4 if label==0 else 0.42, y=0.9,
                 text="True Label: %s"%("Muon" if label==0 else "Electron"),
                 showarrow=False,
-                #yshift=10
                 )
 
         fig.show()
