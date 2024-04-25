@@ -43,10 +43,27 @@ class EventSelection():
 
         return None
     
-    def __getitem__(self, idx):
-        if (idx < 0) or (idx > self.N_events):
-            raise IndexError
-        return Event( 
-            self.event_hit_info[idx], 
-            self.mc_truth[idx]
-        )
+    def __getitem__(self, idxs):
+
+        # handle slices
+        if isinstance(idxs, slice):
+            if idxs.step is None:
+                return [ self[idx] for idx in range(idxs.start, idxs.stop) ]
+            else:
+                return [ self[idx] for idx in range(idxs.start, idxs.stop, idxs.step) ]
+        
+        elif isinstance(idxs, tuple):
+            return [ self[idx] for idx in idxs ]
+
+        else:
+            idx = idxs
+            if (idx < 0) or (idx > self.N_events):
+                raise IndexError
+            
+            return Event( 
+                self.event_hit_info[idx], 
+                self.mc_truth[idx]
+            )
+
+        
+    def __len__(self): return self.N_events
