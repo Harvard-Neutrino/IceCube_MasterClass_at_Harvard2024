@@ -1,4 +1,5 @@
 
+import numpy as np
 
 """
 bound the azimuth angle between [-pi, pi]
@@ -16,6 +17,7 @@ def bound_zen( zen ):
     elif zen > np.pi:   return bound_zen( zen - 2*np.pi )
     else:               return zen
 
+def normalize(x): return x / np.linalg.norm(x)
 
 # spherical coordinate transformations for directions:
 
@@ -30,3 +32,13 @@ def get_direction_angles_from_vector( dir ):
     azi = np.arctan2( dir[1], dir[0] )
     zen = np.arccos( dir[2] )
     return np.array([azi, zen])
+
+
+
+def great_circle_distance( azi_1, zen_1, azi_2, zen_2  ): 
+
+    dot_prod = \
+        np.cos(zen_1) * np.cos(zen_2) + \
+        np.sin(zen_1) * np.sin(zen_2) * np.cos( azi_1 - azi_2 )
+        
+    return np.arccos(dot_prod)
