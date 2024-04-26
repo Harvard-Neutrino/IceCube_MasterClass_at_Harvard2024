@@ -84,21 +84,14 @@ class EventSelection():
             else: raise IndexError(idx)
 
     def __repr__(self):
-
-        repr_str = f"EventSelection containing {self.N_events} events, \n"
-        repr_str += "with attributes: \n"
+        repr_str = f"EventSelection containing {self.N_events} events \n"
+        # repr_str += "with attributes: \n"
         
-        for k in self.mc_keys:
-            repr_str += k
-            repr_str += "\n"
+        # for k in self.mc_keys:
+        #     repr_str += k
+        #     repr_str += "\n"
 
         return repr_str
-        # print(f"EventSelection containing {self.N_events} events, \n")
-        # print("with attributes: \n")
-        # for k in self.mc_keys:
-        #     print(k, "\n")
-        
-        # return None
 
 
 
