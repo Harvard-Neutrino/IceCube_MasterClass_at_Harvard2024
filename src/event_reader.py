@@ -83,6 +83,14 @@ class EventSelection():
                 )
             else: raise IndexError(idx)
 
+    def __repr__(self):
+        print(f"EventSelection containing {self.N_events} events, \n")
+        print("with attributes: \n")
+        for k in self.keys():
+            print(k, "\n")
+        
+        return None
+
 
 
 def load_sim_events(fpath="."):
