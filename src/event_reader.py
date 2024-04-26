@@ -1,5 +1,5 @@
 
-from pandas import read_parquet, Series, DataFrame
+from pandas import read_parquet, Series, DataFrame, RangeIndex
 import numpy as np
 
 from .direction_utils import bound_azi, bound_zen
@@ -98,78 +98,7 @@ def load_sim_events(fpath="."):
     else:
         # Nick's simulation files: 
         out = read_parquet(fpath)
+        out.set_index( RangeIndex(start=0, stop=len(out), step=1) )
         mc_truth =  out["mc_truth"]
 
     return EventSelection( mc_truth, out["photons"] )
-    
-
-# # a wrapper around the output of read_parquet for Jeff's simulation files.
-# # with specialized get
-# class EventSelection():
-
-    def __init__( self, fpath ):
-
-        self.fpath = fpath
-        out = read_parquet( fpath )
-
-        self.N_events = len( out["times"] )
-
-        self.mjd_times = out["times"]
-
-        self.event_hit_info = out["photons"]
-
-        self.mc_truth_init = out["mc_truth_initial"] 
-        self.mc_truth_final = out["mc_truth_final"]
-        self.reco_q = out["reco_quantities"]
-
-        # unpack "mc_truth_initial"   
-        self.true_init_energy  = np.empty( self.N_events )
-        self.true_init_zenith  = np.empty( self.N_events )
-        self.true_init_azimuth = np.empty( self.N_events )
-        for (num, evt) in enumerate( out["mc_truth_initial"] ):
-            self.true_init_energy[num] = evt["initial_state_energy"]
-            self.true_init_zenith[num] = evt["initial_state_zenith"]
-            self.true_init_azimuth[num] = evt["initial_state_azimuth"]
-
-        # unpack "mc_truth_final"
-        self.true_muon_energy = np.empty( self.N_events )
-        self.true_muon_zenith = np.empty( self.N_events )
-        self.true_muon_azimuth = np.empty( self.N_events )
-        for (num, evt) in enumerate( out["mc_truth_final"] ):
-            self.true_muon_energy[num] = evt["final_state_energy"][0]
-            self.true_muon_zenith[num] = evt["final_state_zenith"][0]
-            self.true_muon_azimuth[num] = evt["final_state_azimuth"][0]
-
-        # unpack "reco_q"
-        self.reco_zenith = np.empty( self.N_events )
-        self.reco_azimuth = np.empty( self.N_events )
-        for (num, evt) in enumerate( out["reco_quantities"] ):
-            self.reco_zenith[num] = bound_zen( evt["theta"] )
-            self.reco_azimuth[num] = bound_azi( evt["phi"] )
-
-        return None
-    
-    def __getitem__(self, idxs):
-
-        # handle slices
-        if isinstance(idxs, slice):
-            if idxs.step is None:
-                return [ self[idx] for idx in range(idxs.start, idxs.stop) ]
-            else:
-                return [ self[idx] for idx in range(idxs.start, idxs.stop, idxs.step) ]
-        
-        elif isinstance(idxs, tuple):
-            return [ self[idx] for idx in idxs ]
-
-        else:
-            idx = idxs
-            if (idx < 0) or (idx > self.N_events):
-                raise IndexError
-            
-            return Event( 
-                self.event_hit_info[idx], 
-                self.mjd_times[idx],
-                self.mc_truth_init[idx] | self.mc_truth_final[idx] | self.reco_q[idx],
-            )
-        
-    def __len__(self): return self.N_events
