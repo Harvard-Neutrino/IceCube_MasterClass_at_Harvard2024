@@ -17,61 +17,59 @@ TRACK_EVENT_DICT = {str(idx+1): v for idx, v in enumerate(EVENT_LIST)}
 
 CASCADE_EVENT_DICT = {str(idx+1): idx for idx in range(10)}
 
-def intermediate_plot_fn(events, x, y, z):
-    ed = TRACK_EVENT_DICT
+def display_evt_and_arrow( evt, azi, zen):
+    # ed = TRACK_EVENT_DICT
     # if events._photon_info["mc_truth_initial", "initial_state_type", 0]==12:
     #     ed = CASCADE_EVENT_DICT
-    layout = get_3d_layout()
-    plot_det = plot_I3det()
-    fig = go.FigureWidget(data=plot_det, layout=layout)
-
-    plot_evt = plot_first_hits( events[ed[x]] )
-    fig.add_trace(plot_evt)
-    
-    _, pivot_pt = get_dir_and_pt(events[ed[x]])
-    dir_vec = np.array([np.cos(z) * np.sin(y), 
-                        np.sin(z) * np.sin(y), 
-                        np.cos(y)])
-    
-    fig.add_traces( plot_direction( dir_vec, pivot_pt, color="dodgerblue" ) )
-    fig.show()
-
-def return_to_game(button, event_id, zenith, azimuth, events):
-
-    clear_output()
-
-    submit_button = Button(description='Submit')
-    g = lambda button: reco_results(events, button, event_id, zenith, azimuth)
-    submit_button.on_click(g)
-    
-    f = lambda x,y,z: intermediate_plot_fn(events, x, y, z)
-    interact(f, x=event_id, y=zenith, z=azimuth, continuous_update=False)
-    
-    display(submit_button)
-
-def reco_results(events, button, event_id, zenith, azimuth):
-
-    # global event_id, zenith, azimuth
-    x = event_id.value
-    y = zenith.value
-    z = azimuth.value
-
-    clear_output()
-    EVT_DICT = TRACK_EVENT_DICT
-    # if events._photon_info["mc_truth_initial", "initial_state_type", 0]==12:
-    #     ed = CASCADE_EVENT_DICT
-    
     # layout = get_3d_layout()
     # plot_det = plot_I3det()
     # fig = go.FigureWidget(data=plot_det, layout=layout)
 
-    # plot_evt = plot_first_hits(events[ed[x]])
+    # plot_evt = plot_first_hits( events[ed[x]] )
     # fig.add_trace(plot_evt)
+    
+    # _, pivot_pt = get_dir_and_pt(events[ed[x]])
+    # dir_vec = np.array([np.cos(z) * np.sin(y), 
+    #                     np.sin(z) * np.sin(y), 
+    #                     np.cos(y)])
+    # fig.add_traces( plot_direction( dir_vec, pivot_pt, color="dodgerblue" ) )
+
+    fig = display_evt( evt )
+
+    fig.add_traces( plot_direction(
+        get_direction_vector_from_angles(azi, zen),
+        calc_center_of_gravity(evt.hits_xyz),
+        color="dodgerblue"
+    ))
+    fig.show()
+
+
+"""
+starts a new game given existing widgets. 
+"""
+def start_new_game( event_id, zenith, azimuth, events, EVT_DICT ):
+
+    submit_button = Button(description='Submit')
+
+    g = lambda button: reco_results(events, button, event_id, zenith, azimuth)
+    submit_button.on_click(g)
+    
+    f = lambda x, y, z: display_evt_and_arrow( events, get_evt(x, EVT_DICT, events), y, z )
+    interact(f, x=event_id, y=zenith, z=azimuth, continuous_update=False)
+
+    display(submit_button)
+
+
+"""
+displays true values + angular error
+"""
+def reco_results( events, EVT_DICT, button, event_id, zenith, azimuth):
+
+    clear_output()
 
     evt = get_evt( event_id.value, EVT_DICT, events )
 
     fig = display_evt( evt )
-    
     pivot_pt = calc_center_of_gravity( evt.hits_xyz )
 
     true_zenith = evt.true_muon_zenith
@@ -82,9 +80,6 @@ def reco_results(events, button, event_id, zenith, azimuth):
     fig.add_traces( plot_direction( pred_dir_vec, pivot_pt, color="dodgerblue" ) )
     fig.add_traces( plot_direction( true_dir_vec, pivot_pt, color="red" ) )
     fig.show()
-    
-    true_zenith = events[ed[event_id.value]].true_muon_zenith
-    true_azimuth = events[ed[event_id.value]].true_muon_azimuth
 
     ad = np.rad2deg( great_circle_distance(true_zenith, true_azimuth, zenith.value, azimuth.value) )
 
@@ -92,13 +87,25 @@ def reco_results(events, button, event_id, zenith, azimuth):
     button.close()
 
     return_button = Button(description='Return')
-    f = lambda button: return_to_game(button, event_id, zenith, azimuth, events)    
+    f = lambda button: return_to_game( button, event_id, zenith, azimuth, events, EVT_DICT )    
     return_button.on_click(f)
     display(return_button)
 
-    
 
-def reco_game( events ):
+"""
+clears output, closes the return button, and starts a new game. 
+"""
+def return_to_game(button, event_id, zenith, azimuth, events, EVT_DICT):
+
+    clear_output()
+    button.close()
+    start_new_game( zenith, azimuth, event_id, events, EVT_DICT )
+
+
+"""
+initializes the persistent game widgets.
+"""
+def init_game_widgets():
 
     zenith = FloatSlider(
         min=0, max=3.14, step=0.01, 
@@ -119,20 +126,21 @@ def reco_game( events ):
         description='event_id', disabled=False
     )
 
-    submit_button = Button(description='Submit')
+    return event_id, zenith, azimuth
 
 
-    g = lambda button: reco_results(events, button, event_id, zenith, azimuth)
-    submit_button.on_click(g)
-    
-    f = lambda x, y, z: intermediate_plot_fn(events, x, y, z)
-    interact(f, x=event_id, y=zenith, z=azimuth, continuous_update=False)
+"""
+main function
+"""
+def reco_game( events ):
 
-    display(submit_button)
+    event_id, zenith, azimuth = init_game_widgets()
+    EVT_DICT = TRACK_EVENT_DICT
+    start_new_game( event_id, zenith, azimuth, events, EVT_DICT )
+
 
 
 # event handling utility 
-
 def get_evt( num, EVT_DICT, events ): return events[ EVT_DICT[num] ]
 
 def display_evt( evt ):
@@ -140,20 +148,6 @@ def display_evt( evt ):
     fig = go.FigureWidget( data=plot_I3det(), layout=get_3d_layout() )
     fig.add_trace( plot_first_hits( evt ) )    
     return fig
-
-# def get_dir_and_pt(event):
-
-#     xs, ys, zs = [ event.hits_xyz[:, i] for i in (0, 1, 2) ]
-    
-#     muon_zen = event.true_muon_zenith
-#     muon_azi = event.true_muon_azimuth
-    
-#     dir_vec = get_direction_vector_from_angles( muon_azi, muon_zen )
-
-#     # get center of gravity point
-#     pivot_pt = calc_center_of_gravity( evt.hits_xyz )
-    
-#     return dir_vec, pivot_pt
 
 def calc_center_of_gravity( hits ):
     return hits.mean(axis=0)
