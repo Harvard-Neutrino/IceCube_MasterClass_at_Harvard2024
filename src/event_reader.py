@@ -86,7 +86,7 @@ class EventSelection():
     def __repr__(self):
         print(f"EventSelection containing {self.N_events} events, \n")
         print("with attributes: \n")
-        for k in self.keys():
+        for k in self.mc_keys:
             print(k, "\n")
         
         return None
