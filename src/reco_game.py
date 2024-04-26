@@ -54,7 +54,7 @@ def start_new_game( event_id, zenith, azimuth, events, EVT_DICT ):
     g = lambda button: reco_results(events, button, event_id, zenith, azimuth)
     submit_button.on_click(g)
     
-    f = lambda x, y, z: display_evt_and_arrow( events, get_evt(x, EVT_DICT, events), y, z )
+    f = lambda x, y, z: display_evt_and_arrow( get_evt(x, EVT_DICT, events), y, z )
     interact(f, x=event_id, y=zenith, z=azimuth, continuous_update=False)
 
     display(submit_button)
