@@ -67,12 +67,13 @@ def plot_I3det():
 visualize an event by making a scatter plot of the unique DOMs hit.
 Based on code prepared by Felix Yu (felixyu7) and Jeffrey Lazar (jlazar17) for the 2023 MasterClass.
 """
-def plot_first_hits(evt):
+def plot_first_hits( evt ):
 
-    hits = evt.hits[["t", "sensor_pos_x", "sensor_pos_y", "sensor_pos_z"]].to_numpy()
+    # hits = evt.hits[["t", "sensor_pos_x", "sensor_pos_y", "sensor_pos_z"]].to_numpy()
+    hits = np.column_stack( [evt.hits_t, evt.hits_xyz] )
 
     # sort hits by time
-    sorted_hits = hits[ np.argsort( hits[:,0] ) ]
+    sorted_hits = hits[ np.argsort( evt.hits_t ) ]
 
     # np.unique returns the sorted array, the indices of the unique items, and the counts 
     _, unique_inds, n_hits = np.unique( sorted_hits[:, 1:4], axis=0, return_index=True, return_counts=True )
@@ -82,7 +83,7 @@ def plot_first_hits(evt):
             x = first_hits[:, 1], 
             y = first_hits[:, 2], 
             z = first_hits[:, 3],
-            customdata = first_hits[:,0], 
+            customdata = first_hits[:, 0], 
             mode = 'markers',
             marker = dict(
                 size = 4,

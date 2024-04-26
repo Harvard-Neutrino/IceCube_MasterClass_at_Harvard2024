@@ -41,11 +41,7 @@ def calc_azimuth_diff( azi_1, azi_2 ):
   # this is a little trickier, because 0° and 360° (or, in radians, 0 and 2pi) mean the same thing!
   # we need to remember that the biggest possible difference between two angles is 180° (pi radians).
   abs_diff =  np.abs( azi_1 - azi_2 )
-
-  if abs_diff < np.pi:
-    return abs_diff
-  else:
-    return 2*np.pi - abs_diff
+  return np.minimum( abs_diff, 2*np.pi - abs_diff )
 
 
 def great_circle_distance( azi_1, zen_1, azi_2, zen_2  ): 
