@@ -60,7 +60,7 @@ def reco_results( events, EVT_DICT, button, event_id, zenith, azimuth):
     true_dir_vec = get_direction_vector_from_angles( true_azimuth, true_zenith )
     pred_dir_vec = get_direction_vector_from_angles( azimuth.value, zenith.value )
 
-    fig.add_traces( plot_direction( pred_dir_vec, pivot_pt, color="dodgerblue" ) )
+    fig.add_traces( plot_direction( pred_dir_vec, pivot_pt, color="black" ) )
     fig.add_traces( plot_direction( true_dir_vec, pivot_pt, color="red" ) )
     fig.show()
 
