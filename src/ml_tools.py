@@ -175,17 +175,15 @@ class MLHelper():
     def train(self, num_epochs=10):
         loss_dict = {}
         for epoch in range(num_epochs):
-            print("Beginning epoch %d/%d"%(epoch+1,num_epochs))
+            print("Epoch %d/%d"%(epoch+1,num_epochs),end="\r")
             loss_dict[epoch] = []
             for input,target in self.train_dataloader:
                 self.optimizer.zero_grad()   # zero the gradient buffers
                 output = self.net(input)
                 loss = self.criterion(output, target)
-                print("Training loss: %2.3f"%loss,end="\r")
                 loss_dict[epoch].append(loss.detach().numpy())
                 loss.backward()
                 self.optimizer.step()    # Does the update
-            print ("\033[A                            \033[A")
             self.scheduler.step()
         return loss_dict
     
