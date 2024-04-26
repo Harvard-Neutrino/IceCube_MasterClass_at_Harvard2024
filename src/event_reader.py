@@ -106,7 +106,7 @@ def load_sim_events(fpath="."):
     else:
         # Nick's simulation files: 
         out = read_parquet(fpath)
-        out.set_index( RangeIndex(start=0, stop=len(out), step=1) )
+        out.set_index( RangeIndex(start=0, stop=len(out), step=1), inplace=True )
         mc_truth =  out["mc_truth"]
 
     return EventSelection( mc_truth, out["photons"] )
