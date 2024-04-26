@@ -10,12 +10,11 @@ from src.plot_event import *
 from src.direction_utils import *
 
 
-# TRACK_EVENT_DICT = {str(idx+1): idx for idx in range(10)}
 
-EVENT_LIST = [24, 18973, 25456, 80336, 18901, 172, 47547, 5717, 831, 696, 82031, 3458, 755, 58125, 385]
-TRACK_EVENT_DICT = {str(idx+1): v for idx, v in enumerate(EVENT_LIST)}
+PRESEL_TRACK_EVENTS = [24, 18973, 25456, 80336, 18901, 172, 47547, 5717, 831, 696, 82031, 3458, 755, 58125, 385]
+TRACK_EVENT_DICT = { str(idx+1): v for idx, v in enumerate(PRESEL_TRACK_EVENTS) }
 
-CASCADE_EVENT_DICT = {str(idx+1): idx for idx in range(10)}
+BASIC_EVT_DICT = { str(idx+1): idx for idx in range(10) }
 
 def display_evt_and_arrow( evt, zen, azi):
 
@@ -23,7 +22,7 @@ def display_evt_and_arrow( evt, zen, azi):
     fig.add_traces( plot_direction(
         get_direction_vector_from_angles(azi, zen),
         calc_center_of_gravity(evt.hits_xyz),
-        color="dodgerblue"
+        color="black"
     ))
     fig.show()
 
@@ -116,10 +115,17 @@ def init_game_widgets():
 """
 main function
 """
-def reco_game( events ):
+def reco_game( events, event_type="track" ):
 
     event_id, zenith, azimuth = init_game_widgets()
-    EVT_DICT = TRACK_EVENT_DICT
+
+    if event_type=="track":
+        EVT_DICT = TRACK_EVENT_DICT
+
+    # elif event_type=="cascade":
+    #     events = events[ PRESEL_CASCADE_EVENTS
+
+    else: EVT_DICT = BASIC_EVT_DICT
     start_new_game( event_id, zenith, azimuth, events, EVT_DICT )
 
 
