@@ -143,11 +143,5 @@ def reco_game( events ):
 # event handling utility 
 def get_evt( num, EVT_DICT, events ): return events[ EVT_DICT[num] ]
 
-def display_evt( evt ):
-
-    fig = go.FigureWidget( data=plot_I3det(), layout=get_3d_layout() )
-    fig.add_trace( plot_first_hits( evt ) )    
-    return fig
-
 def calc_center_of_gravity( hits ):
     return hits.mean(axis=0)

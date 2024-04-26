@@ -150,7 +150,10 @@ def plot_direction( dir_vec, pivot_pt, color="black" ):
     return [ plot_dir_line, plot_dir_arrow ]
 
 
-
+def display_evt( evt ):
+    fig = go.FigureWidget( data=plot_I3det(), layout=get_3d_layout() )
+    fig.add_trace( plot_first_hits( evt ) )    
+    return fig
 
 # def display_event( fig, evt ):
 #     fig.add_trace( plot_first_hits(evt) )
