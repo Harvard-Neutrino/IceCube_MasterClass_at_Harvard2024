@@ -211,16 +211,16 @@ class MLHelper():
         plot_evt = plot_first_hits(event)
         fig.add_trace(plot_evt)
 
-        if reveal_network_predition:
-            fig.add_annotation(x=0.5, y=1.0,
-                text="Network Electron Score: %2.2f"%output,
-                showarrow=False,
-                )
-        if reveal_true_label:
-            fig.add_annotation(x=0.4 if label==0 else 0.42, y=0.9,
-                text="True Label: %s"%("Muon" if label==0 else "Electron"),
-                showarrow=False,
-                )
+        text = ""
 
+        if reveal_network_predition:
+            text += "Network electron score is %2.2f. "%output
+            
+        if reveal_true_label:
+            text += "The particle is %s"%("a muon" if label==0 else "an electron")
+        fig.add_annotation(x=0.5, y=0.95,
+                text=text,
+                showarrow=False,
+                )
         fig.show()
 
