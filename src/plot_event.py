@@ -3,6 +3,16 @@ import plotly.graph_objs as go
 import numpy as np
 
 """
+for modifying the plotly layout.scene.camera.eye attribute.
+"""
+def get_eye_xyz( camera_phi, camera_th, zoom=2 ):
+    return dict(
+        x = zoom * np.cos(camera_phi) * np.cos(camera_th),
+        y = zoom * np.sin(camera_phi) * np.cos(camera_th),
+        z = zoom * np.sin(camera_th)
+    )
+
+"""
 cleaner plotly.graph_objs.Layout object for 3d plots.
 """
 def get_3d_layout():
@@ -20,8 +30,14 @@ def get_3d_layout():
             yaxis=axis_settings,
             zaxis=axis_settings,
             camera=dict(
+
+                # 'which direction is up'?
                 up=dict(x=0, y=0, z=1),
+
+                # 'translate?'
                 center=dict(x=0, y=0, z=0),
+
+                # 
                 eye=dict(x=1.5, y=1.5, z=0.1)
             )
         ),
