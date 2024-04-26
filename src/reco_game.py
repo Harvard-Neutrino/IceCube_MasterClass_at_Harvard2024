@@ -82,7 +82,8 @@ def return_to_game(button, event_id, zenith, azimuth, events, EVT_DICT):
 
     clear_output()
     button.close()
-    start_new_game( zenith, azimuth, event_id, events, EVT_DICT )
+
+    start_new_game( event_id, zenith, azimuth, events, EVT_DICT )
 
 
 """
