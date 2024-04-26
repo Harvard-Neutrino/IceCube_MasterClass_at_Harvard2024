@@ -1,5 +1,5 @@
 
-from pandas import read_parquet, Series
+from pandas import read_parquet, Series, DataFrame
 import numpy as np
 
 from .direction_utils import bound_azi, bound_zen
@@ -15,19 +15,22 @@ class Event():
 
         self.hits_t = photon_hits["t"]
         self.hits_xyz = np.vstack([ photon_hits[f"sensor_pos_{a}"] for a in ("x", "y", "z") ]).T
-
-        # self.string_id = photon_hits["string_id"]
-        # self.sensor_id = photon_hits["sensor_id"] 
+        self.string_id = photon_hits["string_id"]
+        self.sensor_id = photon_hits["sensor_id"] 
 
         return None
     
-    # def __repr__(self): 
-    #     print( type(self) )
-        # return repr( self.hits )
-        # return repr( DataFrame( self.hits )[[
-        #     "t", "string_id", "sensor_id",
-        #     "sensor_pos_x", "sensor_pos_y", "sensor_pos_z",
-        # ]] )
+    def __repr__(self):
+        print(f"IceCube Event with {len(self.hits_t)} hits: \n")
+        return repr( 
+            DataFrame.from_dict( dict(
+                t=self.hits_t,
+                dom=[ t for t in zip(self.string_id, self.sensor_id) ]
+                # x=self.hits_xyz[:, 0],
+                # y=self.hits_xyz[:, 1],
+                # z=self.hits_xyz[:,2]
+            ))
+        ) 
 
 """
 wrapper around the combined Prometheus, LI output,
