@@ -1,52 +1,70 @@
 
-from pandas import read_parquet
-from pandas import DataFrame
+from pandas import read_parquet, Series, DataFrame, RangeIndex
+import numpy as np
 
-# just a wrapper with a __repr__ attribute...
+from .direction_utils import bound_azi, bound_zen
+
+
 class Event():
 
-    def __init__( self, photon_hits, true_q  ):
+    def __init__( self, photon_hits, mc_truth ):
 
-        self.true_muon_zenith = true_q["final_state_zenith"][0]
-        self.true_muon_azimuth = true_q["final_state_azimuth"][0]
+        self.true_muon_energy = mc_truth["final_state_energy"][0]
+        self.true_muon_zenith = mc_truth["final_state_zenith"][0]
+        self.true_muon_azimuth = mc_truth["final_state_azimuth"][0]
 
-        # self.hits = photon_hits
-        self.hits = DataFrame( photon_hits )[[
-            "t", "string_id", "sensor_id",
-            "sensor_pos_x", "sensor_pos_y", "sensor_pos_z",
-        ]]
+        self.hits_t = photon_hits["t"]
+        self.hits_xyz = np.vstack([ photon_hits[f"sensor_pos_{a}"] for a in ("x", "y", "z") ]).T
+        self.string_id = photon_hits["string_id"]
+        self.sensor_id = photon_hits["sensor_id"] 
 
         return None
     
-    def __repr__(self): 
-        print( type(self) )
-        return repr( self.hits )
-        # return repr( DataFrame( self.hits )[[
-        #     "t", "string_id", "sensor_id",
-        #     "sensor_pos_x", "sensor_pos_y", "sensor_pos_z",
-        # ]] )
+    def __repr__(self):
+        print(f"IceCube Event with {len(self.hits_t)} hits: \n")
+        return repr( 
+            DataFrame.from_dict( dict(
+                t=self.hits_t,
+                dom=[ t for t in zip(self.string_id, self.sensor_id) ]
+                # x=self.hits_xyz[:, 0],
+                # y=self.hits_xyz[:, 1],
+                # z=self.hits_xyz[:,2]
+            ))
+        ) 
 
-# a wrapper around the output of read_parquet,
-# with specialized get
+"""
+wrapper around the combined Prometheus, LI output,
+with two kinds of indexing:
+    integer based for indexing events,
+    string based for indexing a given property of all events.
+"""
 class EventSelection():
 
-    def __init__( self, fpath ):
+    def __init__( self, mc_truth, prometheus_photons=None ):
 
-        self.fpath = fpath
-        out = read_parquet( fpath )
+        self.mc_truth = mc_truth 
+        self.mc_keys = next(iter(mc_truth)).keys()
+        self.photons = prometheus_photons
 
-        self.N_events = len( out["times"] )
-        self.event_mjd_times = out["times"]
-
-        self.event_hit_info = out["photons"]
-        self.mc_truth = out["mc_truth_final"]
+        self.indices = mc_truth.index
+        self.N_events = len(mc_truth)
 
         return None
-    
-    def __getitem__(self, idxs):
+
+    def __len__(self): return self.N_events
+
+    def __getitem__( self, idxs ):
+
+        # handle string-based indexing for evt attributes:
+        if isinstance(idxs, str):
+            key = idxs
+            if key in self.mc_keys:
+                return np.array( [ evt[key] for evt in self.mc_truth] )
+            else:
+                raise AttributeError(key)
 
         # handle slices
-        if isinstance(idxs, slice):
+        elif isinstance(idxs, slice):
             if idxs.step is None:
                 return [ self[idx] for idx in range(idxs.start, idxs.stop) ]
             else:
@@ -54,16 +72,43 @@ class EventSelection():
         
         elif isinstance(idxs, tuple):
             return [ self[idx] for idx in idxs ]
-
+        
+        # base case: 
         else:
             idx = idxs
-            if (idx < 0) or (idx > self.N_events):
-                raise IndexError
-            
-            return Event( 
-                self.event_hit_info[idx], 
-                self.mc_truth[idx]
-            )
+            if idx in self.indices:
+                return Event( 
+                    self.photons[idx], 
+                    self.mc_truth[idx],
+                )
+            else: raise IndexError(idx)
 
+    def __repr__(self):
+        repr_str = f"EventSelection containing {self.N_events} events \n"
+        # repr_str += "with attributes: \n"
         
-    def __len__(self): return self.N_events
+        # for k in self.mc_keys:
+        #     repr_str += k
+        #     repr_str += "\n"
+
+        return repr_str
+
+
+
+def load_sim_events(fpath="."):
+
+    if "moonshadow" in fpath:
+        # Jeff's moon shadow simulation files from last year:
+        out = read_parquet(fpath)
+        mc_truth = Series(
+            [ out["mc_truth_initial"][i] | out["mc_truth_final"][i] | out["reco_quantities"][i] | dict(mjd_time=out["times"][i]) \
+                for i in out["mc_truth_initial"].index ]
+        )
+
+    else:
+        # Nick's simulation files: 
+        out = read_parquet(fpath)
+        out.set_index( RangeIndex(start=0, stop=len(out), step=1), inplace=True )
+        mc_truth =  out["mc_truth"]
+
+    return EventSelection( mc_truth, out["photons"] )

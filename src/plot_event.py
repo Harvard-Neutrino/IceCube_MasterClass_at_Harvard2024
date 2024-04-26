@@ -3,6 +3,16 @@ import plotly.graph_objs as go
 import numpy as np
 
 """
+for modifying the plotly layout.scene.camera.eye attribute.
+"""
+def get_eye_xyz( camera_phi, camera_th, zoom=2 ):
+    return dict(
+        x = zoom * np.cos(camera_phi) * np.cos(camera_th),
+        y = zoom * np.sin(camera_phi) * np.cos(camera_th),
+        z = zoom * np.sin(camera_th)
+    )
+
+"""
 cleaner plotly.graph_objs.Layout object for 3d plots.
 """
 def get_3d_layout():
@@ -20,9 +30,15 @@ def get_3d_layout():
             yaxis=axis_settings,
             zaxis=axis_settings,
             camera=dict(
+
+                # 'which direction is up'?
                 up=dict(x=0, y=0, z=1),
+
+                # 'translate?'
                 center=dict(x=0, y=0, z=0),
-                eye=dict(x=1.5, y=1.5, z=0.1)
+
+                # 
+                eye=get_eye_xyz( np.pi/3, np.pi/18, 2 )
             )
         ),
         margin=dict(l=20, r=20, t=40, b=40),
@@ -67,12 +83,13 @@ def plot_I3det():
 visualize an event by making a scatter plot of the unique DOMs hit.
 Based on code prepared by Felix Yu (felixyu7) and Jeffrey Lazar (jlazar17) for the 2023 MasterClass.
 """
-def plot_first_hits(evt):
+def plot_first_hits( evt ):
 
-    hits = evt.hits[["t", "sensor_pos_x", "sensor_pos_y", "sensor_pos_z"]].to_numpy()
+    # hits = evt.hits[["t", "sensor_pos_x", "sensor_pos_y", "sensor_pos_z"]].to_numpy()
+    hits = np.column_stack( [evt.hits_t, evt.hits_xyz] )
 
     # sort hits by time
-    sorted_hits = hits[ np.argsort( hits[:,0] ) ]
+    sorted_hits = hits[ np.argsort( evt.hits_t ) ]
 
     # np.unique returns the sorted array, the indices of the unique items, and the counts 
     _, unique_inds, n_hits = np.unique( sorted_hits[:, 1:4], axis=0, return_index=True, return_counts=True )
@@ -82,7 +99,7 @@ def plot_first_hits(evt):
             x = first_hits[:, 1], 
             y = first_hits[:, 2], 
             z = first_hits[:, 3],
-            customdata = first_hits[:,0], 
+            customdata = first_hits[:, 0], 
             mode = 'markers',
             marker = dict(
                 size = 4,
@@ -92,7 +109,8 @@ def plot_first_hits(evt):
             showlegend=False,
             hoverinfo=['x','y','z','text'], 
             hovertext=['%.2f ns' % t for t in first_hits[:,3]], 
-            hovertemplate="x: %{x} m, y: %{y} m, z: %{z} m, t: %{customdata} ns"
+            hovertemplate="x: %{x} m, y: %{y} m, z: %{z} m, t: %{customdata} ns",
+            name="current_evt"
     )
 
     return hits
@@ -110,6 +128,7 @@ def plot_direction( dir_vec, pivot_pt, color="black" ):
             mode ='lines',
             line = dict( color=color, width=6 ),
             showlegend=False,
+            name="arrow_line",
             # marker = dict( color='black', size=4 )
         )
 
@@ -124,7 +143,18 @@ def plot_direction( dir_vec, pivot_pt, color="black" ):
         showscale=False,
         sizemode="absolute",
         sizeref=100, 
-        colorscale=[[0, color], [1, color]]
+        colorscale=[[0, color], [1, color]],
+        name="arrow_head"
     )
 
     return [ plot_dir_line, plot_dir_arrow ]
+
+
+def display_evt( evt ):
+    fig = go.FigureWidget( data=plot_I3det(), layout=get_3d_layout() )
+    fig.add_trace( plot_first_hits( evt ) )    
+    return fig
+
+# def display_event( fig, evt ):
+#     fig.add_trace( plot_first_hits(evt) )
+#     return fig
