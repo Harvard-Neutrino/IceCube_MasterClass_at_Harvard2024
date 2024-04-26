@@ -93,7 +93,8 @@ def plot_first_hits( evt ):
             showlegend=False,
             hoverinfo=['x','y','z','text'], 
             hovertext=['%.2f ns' % t for t in first_hits[:,3]], 
-            hovertemplate="x: %{x} m, y: %{y} m, z: %{z} m, t: %{customdata} ns"
+            hovertemplate="x: %{x} m, y: %{y} m, z: %{z} m, t: %{customdata} ns",
+            name="current_evt"
     )
 
     return hits
@@ -111,6 +112,7 @@ def plot_direction( dir_vec, pivot_pt, color="black" ):
             mode ='lines',
             line = dict( color=color, width=6 ),
             showlegend=False,
+            name="arrow_line",
             # marker = dict( color='black', size=4 )
         )
 
@@ -125,7 +127,15 @@ def plot_direction( dir_vec, pivot_pt, color="black" ):
         showscale=False,
         sizemode="absolute",
         sizeref=100, 
-        colorscale=[[0, color], [1, color]]
+        colorscale=[[0, color], [1, color]],
+        name="arrow_head"
     )
 
     return [ plot_dir_line, plot_dir_arrow ]
+
+
+
+
+# def display_event( fig, evt ):
+#     fig.add_trace( plot_first_hits(evt) )
+#     return fig
