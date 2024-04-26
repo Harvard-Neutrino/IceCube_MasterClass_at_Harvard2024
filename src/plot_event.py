@@ -38,7 +38,7 @@ def get_3d_layout():
                 center=dict(x=0, y=0, z=0),
 
                 # 
-                eye=get_eye_xyz( np.pi/6, np.pi/6, 2 )
+                eye=get_eye_xyz( np.pi/3, np.pi/18, 2 )
             )
         ),
         margin=dict(l=20, r=20, t=40, b=40),

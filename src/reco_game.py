@@ -17,25 +17,9 @@ TRACK_EVENT_DICT = {str(idx+1): v for idx, v in enumerate(EVENT_LIST)}
 
 CASCADE_EVENT_DICT = {str(idx+1): idx for idx in range(10)}
 
-def display_evt_and_arrow( evt, azi, zen):
-    # ed = TRACK_EVENT_DICT
-    # if events._photon_info["mc_truth_initial", "initial_state_type", 0]==12:
-    #     ed = CASCADE_EVENT_DICT
-    # layout = get_3d_layout()
-    # plot_det = plot_I3det()
-    # fig = go.FigureWidget(data=plot_det, layout=layout)
-
-    # plot_evt = plot_first_hits( events[ed[x]] )
-    # fig.add_trace(plot_evt)
-    
-    # _, pivot_pt = get_dir_and_pt(events[ed[x]])
-    # dir_vec = np.array([np.cos(z) * np.sin(y), 
-    #                     np.sin(z) * np.sin(y), 
-    #                     np.cos(y)])
-    # fig.add_traces( plot_direction( dir_vec, pivot_pt, color="dodgerblue" ) )
+def display_evt_and_arrow( evt, zen, azi):
 
     fig = display_evt( evt )
-
     fig.add_traces( plot_direction(
         get_direction_vector_from_angles(azi, zen),
         calc_center_of_gravity(evt.hits_xyz),
@@ -109,14 +93,14 @@ def init_game_widgets():
 
     zenith = FloatSlider(
         min=0, max=3.14, step=0.01, 
-        value=0, 
+        value=np.pi * 2/3, 
         description='zenith',
         layout=Layout(width='75%')
     )
 
     azimuth = FloatSlider(
         min=-3.14, max=3.14, step=0.01, 
-        value=0, 
+        value = 0, 
         description='azimuth',
         layout=Layout(width='75%')
     )
