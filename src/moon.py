@@ -10,7 +10,7 @@ global moon
 moon = Moon( mjd_to_datetime(58931) )
 
 
-def str_to_datetime( time_str ):
+def str_to_datetime( t ):
     t_split = t.replace(":", "-")
     t_split = [int(x) for x in t.split("-")]
     try:
