@@ -18,6 +18,7 @@ BASIC_EVT_DICT = { str(idx+1): idx for idx in range(10) }
 
 def display_evt_and_arrow( evt, zen, azi, calc_dist=False):
 
+    clear_output()
     fig = display_evt( evt )
     fig.add_traces( plot_direction(
         get_direction_vector_from_angles(azi, zen),
