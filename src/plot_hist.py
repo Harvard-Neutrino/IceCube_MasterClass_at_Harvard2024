@@ -26,3 +26,8 @@ def plot_heatmap(
         plt.savefig(kwargs["figname"])
 
     plt.show()
+
+
+#### Bonus: We can investigate more deeply by plotting a histogram...
+# We can investigate more closely by making what is called a histogram. A histogram essentially counts how many items in a collection have values that fall in different bins. 
+# For example, a histogram of the *differences between the true and reco zenith angles* for many events might say that there were 10 events for which the difference was less than 10°, 30 for which it was between 10° and 20°, 5 for which it was between 20° and 30°, ...

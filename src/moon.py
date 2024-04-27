@@ -43,11 +43,11 @@ def get_moon_position_at( t, lat=-90., long=45. ):
 
     # in degrees !!
     _, decl, _, azi = moon.topocentric_position( long, lat )
-
-    # zen = np.rad2deg( bound_zen( np.deg2rad(90 - decl) ) )
-    # azi = np.rad2deg( bound_azi( np.deg2rad(azi) ) )
-
     zen = 90 - decl
+
+    zen = np.rad2deg( bound_zen( np.deg2rad(zen) ) )
+    azi = np.rad2deg( bound_azi( np.deg2rad(azi) ) )
+
     return azi, zen  
 
 # from .utils import is_floatable

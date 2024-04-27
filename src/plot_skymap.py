@@ -40,3 +40,36 @@ def plot_skymap(moon_zeniths, moon_azimuths):
     plt.colorbar(orientation="horizontal", label="days", pad=0.05) #need to put dates in the correct format
     plt.show()
 
+
+# <!-- Just to get a sense, let's plot the moon's position in the sky at many different times and see how much it moves. How much does it move in a month? Can you figure out how much does it move in a year? (You will need to modify `start_date` and `end_date`)!
+# We can do this for an observer located at the South Pole, or one here in Cambridge (just remember to update `observer_lat` and `observer_long`)! -->
+
+# from src.plot_skymap import plot_skymap
+
+# # change me if you want to look at a different range of dates/times!
+# start_date = "2023-01-01"
+# end_date = "2023-02-01"
+# dates = np.arange(
+#     start_date, end_date, dtype='datetime64[D]')
+
+# # change me if you want to change the observer's position!
+# observer_lat = icecube_lat
+# observer_long = icecube_long
+
+# moon_zeniths = []
+# moon_azimuths = []
+
+# # Now we iterate over all the dates, and calculate the moon position for each.
+# # At each step, we will `append` the zenith and azimuth to our lists
+# for date in dates:
+#     azi, zen = get_moon_position_at( 
+#         str(date),
+#         observer_lat,
+#         observer_long
+#     )
+
+#     moon_zeniths.append(zen)
+#     moon_azimuths.append(azi)
+
+
+# plot_skymap(moon_zeniths, moon_azimuths)
