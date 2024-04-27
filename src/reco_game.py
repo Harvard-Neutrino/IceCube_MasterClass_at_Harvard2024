@@ -27,7 +27,6 @@ def display_evt_and_arrow( evt, zen, azi, calc_dist=False):
     ))
 
     if calc_dist:
-
         mean_dist = calc_mean_perpendicular_distance( 
             np.array([azi, zen]),
             evt.hits_xyz,
@@ -142,7 +141,7 @@ def reco_game( events, event_type="track", calc_dist=False ):
     #     events = events[ PRESEL_CASCADE_EVENTS
 
     else: EVT_DICT = BASIC_EVT_DICT
-    start_new_game( event_id, zenith, azimuth, events, EVT_DICT, calc_dist )
+    return start_new_game( event_id, zenith, azimuth, events, EVT_DICT, calc_dist )
 
 
 
