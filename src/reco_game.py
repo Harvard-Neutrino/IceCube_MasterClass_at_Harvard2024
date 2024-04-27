@@ -32,8 +32,9 @@ def display_evt_and_arrow( evt, zen, azi, calc_dist=False):
             evt.hits_xyz,
             calc_center_of_gravity( evt.hits_xyz )
         ) 
+        print("\n")
         print( f"the mean distance is {mean_dist:.2f} meters \n" )
-       
+        print("\n")
 
     fig.show()
 
@@ -57,7 +58,7 @@ def start_new_game( event_id, zenith, azimuth, events, EVT_DICT, calc_dist=False
 """
 displays true values + angular error
 """
-def reco_results( events, EVT_DICT, button, event_id, zenith, azimuth):
+def reco_results( events, EVT_DICT, button, event_id, zenith, azimuth, calc_dist):
 
     clear_output()
 
@@ -81,7 +82,7 @@ def reco_results( events, EVT_DICT, button, event_id, zenith, azimuth):
     button.close()
 
     return_button = Button(description='Return')
-    f = lambda button: return_to_game( button, event_id, zenith, azimuth, events, EVT_DICT )    
+    f = lambda button: return_to_game( button, event_id, zenith, azimuth, events, EVT_DICT, calc_dist )    
     return_button.on_click(f)
     display(return_button)
 
@@ -89,12 +90,12 @@ def reco_results( events, EVT_DICT, button, event_id, zenith, azimuth):
 """
 clears output, closes the return button, and starts a new game. 
 """
-def return_to_game(button, event_id, zenith, azimuth, events, EVT_DICT):
+def return_to_game(button, event_id, zenith, azimuth, events, EVT_DICT, calc_dist):
 
     clear_output()
     button.close()
 
-    start_new_game( event_id, zenith, azimuth, events, EVT_DICT )
+    start_new_game( event_id, zenith, azimuth, events, EVT_DICT, calc_dist=calc_dist )
 
 
 """
@@ -138,7 +139,7 @@ def reco_game( events, event_type="track", calc_dist=False ):
     #     events = events[ PRESEL_CASCADE_EVENTS
 
     else: EVT_DICT = BASIC_EVT_DICT
-    start_new_game( event_id, zenith, azimuth, events, EVT_DICT, calc_dist=False )
+    start_new_game( event_id, zenith, azimuth, events, EVT_DICT, calc_dist )
 
 
 
