@@ -51,3 +51,4 @@ def great_circle_distance( azi_1, zen_1, azi_2, zen_2  ):
         np.sin(zen_1) * np.sin(zen_2) * np.cos( azi_1 - azi_2 )
         
     return np.arccos(dot_prod)
+    

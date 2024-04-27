@@ -148,3 +148,20 @@ def get_evt( num, EVT_DICT, events ): return events[ EVT_DICT[num] ]
 
 def calc_center_of_gravity( hits ):
     return hits.mean(axis=0)
+
+
+"""
+This function uses the equation above to calculate the perpendicular distance between a single point and a pivot.
+"""
+def calc_perpendicular_distance( hit_pt, dir_vec, pivot_pt ):
+    dist_vec = hit_pt - pivot_pt
+    return np.sqrt( np.dot( dist_vec, dist_vec ) -  np.dot( dist_vec, dir_vec )**2 )
+
+
+"""
+Given a set of hits and a pair of guess angles, calculate the mean of all the perpendicular distances!
+"""
+def calc_mean_perpendicular_distance( dir_angles, hit_pts, pivot_pt ):
+    
+    dir_vec = get_direction_vector_from_angles( dir_angles[0], dir_angles[1] )
+    return np.mean([ calc_perpendicular_distance(hit, dir_vec, pivot_pt) for hit in hit_pts ])
