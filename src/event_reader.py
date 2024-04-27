@@ -89,7 +89,7 @@ class EventSelection():
             if idx in self.indices:
                 return Event( 
                     self.photons[idx], 
-                    self.mc_truth[idx],
+                    self.mc_truth[idx] | dict(mjd_time=None),
                 )
             else: raise IndexError(idx)
 
@@ -120,6 +120,6 @@ def load_sim_events(fpath="."):
         # Nick's simulation files: 
         out = read_parquet(fpath)
         out.set_index( RangeIndex(start=0, stop=len(out), step=1), inplace=True )
-        mc_truth =  out["mc_truth"]
+        mc_truth =  out["mc_truth"] 
 
     return EventSelection( mc_truth, out["photons"] )
