@@ -23,10 +23,17 @@ def str_to_datetime( time_str ):
 
 """
 calculate the position of the moon at 
-- earth surface position defined by (long, lat) in degrees
+- earth surface position defined by (lat, long) in degrees
 - time t 
 """
-def get_moon_position_at( t, long, lat ):
+def get_moon_position_at( t, lat, long ):
+
+    if isinstance(t, str):
+        t = str_to_datetime( t )
+
+    elif isinstance(t, float):
+        t = mjd_to_datetime( t )
+
 
     moon.datetime = mjd_to_datetime( t )
     moon.get_lonsun()
