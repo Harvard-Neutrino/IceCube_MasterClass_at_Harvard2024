@@ -34,8 +34,7 @@ def get_moon_position_at( t, lat, long ):
     elif isinstance(t, float):
         t = mjd_to_datetime( t )
 
-
-    moon.datetime = mjd_to_datetime( t )
+    moon.datetime = t
     moon.get_lonsun()
 
     # in degrees !!
