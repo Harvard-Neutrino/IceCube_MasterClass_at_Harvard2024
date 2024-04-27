@@ -9,6 +9,8 @@ class Event():
 
     def __init__( self, photon_hits, mc_truth ):
 
+        self.mjd_time = mc_truth["mjd_time"]
+
         self.true_muon_energy = mc_truth["final_state_energy"][0]
         self.true_muon_zenith = mc_truth["final_state_zenith"][0]
         self.true_muon_azimuth = mc_truth["final_state_azimuth"][0]
