@@ -62,6 +62,14 @@ class EventSelection():
             key = idxs
             if key in self.mc_keys:
                 return np.array( [ evt[key] for evt in self.mc_truth] )
+            
+            # hack for now
+            elif key == "reco_azimuth":
+                return self["phi"]
+            
+            elif key == "reco_zenith":
+                return self["theta"]
+                
             else:
                 raise AttributeError(key)
 
@@ -102,6 +110,7 @@ def load_sim_events(fpath="."):
     if "moonshadow" in fpath:
         # Jeff's moon shadow simulation files from last year:
         out = read_parquet(fpath)
+
         mc_truth = Series(
             [ out["mc_truth_initial"][i] | out["mc_truth_final"][i] | out["reco_quantities"][i] | dict(mjd_time=out["times"][i]) \
                 for i in out["mc_truth_initial"].index ]
