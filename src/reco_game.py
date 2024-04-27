@@ -78,7 +78,9 @@ def reco_results( events, EVT_DICT, button, event_id, zenith, azimuth, calc_dist
 
     ad = np.rad2deg( great_circle_distance(true_zenith, true_azimuth, zenith.value, azimuth.value) )
 
+    print("\n")
     print( f"Your estimate was {ad:.2f}° off the true direction.")
+    print("\n")
     button.close()
 
     return_button = Button(description='Return')
