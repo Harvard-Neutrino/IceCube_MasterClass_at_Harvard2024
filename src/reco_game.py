@@ -16,7 +16,7 @@ TRACK_EVENT_DICT = { str(idx+1): v for idx, v in enumerate(PRESEL_TRACK_EVENTS) 
 
 BASIC_EVT_DICT = { str(idx+1): idx for idx in range(10) }
 
-def display_evt_and_arrow( evt, zen, azi):
+def display_evt_and_arrow( evt, zen, azi, calc_dist=False):
 
     fig = display_evt( evt )
     fig.add_traces( plot_direction(
@@ -24,20 +24,31 @@ def display_evt_and_arrow( evt, zen, azi):
         calc_center_of_gravity(evt.hits_xyz),
         color="black"
     ))
+
+    if calc_dist:
+
+        mean_dist = calc_mean_perpendicular_distance( 
+            np.array([azi, zen]),
+            evt.hits_xyz,
+            calc_center_of_gravity( evt.hits_xyz )
+        ) 
+        print( f"the mean distance is {mean_dist:.2f} meters \n" )
+       
+
     fig.show()
 
 
 """
 starts a new game given existing widgets. 
 """
-def start_new_game( event_id, zenith, azimuth, events, EVT_DICT ):
+def start_new_game( event_id, zenith, azimuth, events, EVT_DICT, calc_dist=False ):
 
     submit_button = Button(description='Submit')
 
     g = lambda button: reco_results( events, EVT_DICT, button, event_id, zenith, azimuth)
     submit_button.on_click(g)
     
-    f = lambda x, y, z: display_evt_and_arrow( get_evt(x, EVT_DICT, events), y, z )
+    f = lambda x, y, z: display_evt_and_arrow( get_evt(x, EVT_DICT, events), y, z, calc_dist )
     interact(f, x=event_id, y=zenith, z=azimuth, continuous_update=False)
 
     display(submit_button)
@@ -116,7 +127,7 @@ def init_game_widgets():
 """
 main function
 """
-def reco_game( events, event_type="track" ):
+def reco_game( events, event_type="track", calc_dist=False ):
 
     event_id, zenith, azimuth = init_game_widgets()
 
@@ -127,7 +138,7 @@ def reco_game( events, event_type="track" ):
     #     events = events[ PRESEL_CASCADE_EVENTS
 
     else: EVT_DICT = BASIC_EVT_DICT
-    start_new_game( event_id, zenith, azimuth, events, EVT_DICT )
+    start_new_game( event_id, zenith, azimuth, events, EVT_DICT, calc_dist=False )
 
 
 
