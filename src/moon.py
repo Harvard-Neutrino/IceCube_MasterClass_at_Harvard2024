@@ -5,6 +5,8 @@ import numpy as np
 from datetime import datetime
 
 from src.jdutil import mjd_to_datetime
+from src.direction_utils import *
+
 
 global moon
 moon = Moon( mjd_to_datetime(58931) )
@@ -34,13 +36,17 @@ def get_moon_position_at( t, lat, long ):
     elif isinstance(t, float):
         t = mjd_to_datetime( t )
 
-    moon.datetime = t
-    moon.get_lonsun()
+    # moon.datetime = t
+    # moon.get_lonsun()
+
+    moon = Moon( t )
 
     # in degrees !!
     _, decl, _, azi = moon.topocentric_position( long, lat )
 
-    zen = 90 - decl
+    zen = np.rad2deg( bound_zen( np.deg2rad(90 - decl) ) )
+    azi = np.rad2deg( bound_azi( np.deg2rad(azi) ) )
+
     return azi, zen  
 
 
